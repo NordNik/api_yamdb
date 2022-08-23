@@ -5,7 +5,7 @@ ROLE_CHOICES = [
     ('US', 'user'),
     ('MD', 'moderator'),
     ('AD', 'admin'),
-    ]
+]
 
 
 class User(AbstractUser):
