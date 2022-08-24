@@ -1,11 +1,10 @@
 from django.urls import path
-from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .views import signup
+from .views import signup, token
 
 urlpatterns = [
     path(
-        'auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'
+        'auth/token/', token, name='token'
     ),
     path(
         'auth/signup/', signup, name='signup'
