@@ -24,15 +24,15 @@ class ConfirmationData(models.Model):
     confirmation_code = models. CharField(max_length=8)
 
 
-class Categories(models.Model):
-    category_name = models.CharField(max_length=200)
-    category_slug = models.SlugField(unique=True)
+class Categorie(models.Model):
+    categorie_name = models.CharField(max_length=200)
+    categorie_slug = models.SlugField(unique=True)
 
     def __str__(self):
-        return self.category_name
+        return self.categorie_name
 
 
-class Genres(models.Model):
+class Genre(models.Model):
     genre_name = models.CharField(max_length=200)
     genre_slug = models.SlugField(unique=True)
 
@@ -40,26 +40,26 @@ class Genres(models.Model):
         return self.genre_name
 
 
-class Titles(models.Model):
+class Title(models.Model):
     title_name = models.TextField()
-    category = models.ForeignKey(
-        Categories, on_delete=models.CASCADE,
+    categorie = models.ForeignKey(
+        Categorie, on_delete=models.CASCADE,
         related_name='titles', blank=False, null=False
     )
-    genre = models.ForeignKey(
-        Genres, on_delete=models.CASCADE,
-        related_name='titles', blank=False, null=False
+    genre = models.ManyToManyField(
+        Genre,
+        related_name='titles'
     )
 
     def __str__(self):
-        return self.name
+        return self.title_name
 
 
 class Comment(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='comments')
     post = models.ForeignKey(
-        Titles, on_delete=models.CASCADE, related_name='comments')
+        Title, on_delete=models.CASCADE, related_name='comments')
     text = models.TextField()
     created = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True)
@@ -68,7 +68,7 @@ class Comment(models.Model):
 class Vote(models.Model):
     value = models.SmallIntegerField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    post = models.ForeignKey(Titles, on_delete=models.CASCADE)
+    post = models.ForeignKey(Title, on_delete=models.CASCADE)
     voted_on = models.DateTimeField(auto_now=True)
 
     class Meta:
