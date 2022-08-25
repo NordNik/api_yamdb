@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from reviews.models import Categories, Genres, Titles, User, ConfirmationData
+from reviews.models import Genres, User, ConfirmationData
 from django.shortcuts import get_object_or_404
 
 
