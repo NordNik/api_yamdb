@@ -53,3 +53,9 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         ]
+
+
+class GenresSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genres
+        fields = ['all']
