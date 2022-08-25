@@ -58,4 +58,4 @@ class UserSerializer(serializers.ModelSerializer):
 class GenresSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genres
-        fields = ['all']
+        fields = '__all__'
