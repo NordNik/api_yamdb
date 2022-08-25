@@ -14,8 +14,14 @@ class User(AbstractUser):
     role = models.CharField(
         max_length=2, verbose_name='Role', choices=ROLE_CHOICES, default='US'
     )
-    password = None
+    password = models.CharField(max_length=20, null=True)
     email = models.EmailField()
+
+
+class ConfirmationData(models.Model):
+    confirmation_email = models. EmailField()
+    confirmation_username = models.CharField(max_length=19)
+    confirmation_code = models. CharField(max_length=8)
 
 
 class Categories(models.Model):

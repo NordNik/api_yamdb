@@ -1,16 +1,24 @@
 from rest_framework import viewsets
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import permissions
-from rest_framework import filters
-from django.shortcuts import get_object_or_404
-from rest_framework.mixins import (
-    CreateModelMixin, ListModelMixin, RetrieveModelMixin)
 
-from reviews.models import Genres
-from .serializers import GenresSerializer
+from reviews.models import Genres, Categories, Titles
+from .serializers import (
+    GenresSerializer, CategoriesSerializer, TitlesSerializer)
 
 
-class GroupViewSet(viewsets.ReadOnlyModelViewSet):
+class GenresViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Genres.objects.all()
     serializer_class = GenresSerializer
+    permission_classes = (permissions.AllowAny,)
+
+
+class CategoriesViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Categories.objects.all()
+    serializer_class = CategoriesSerializer
+    permission_classes = (permissions.AllowAny,)
+
+
+class TitlesViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Titles.objects.all()
+    serializer_class = TitlesSerializer
     permission_classes = (permissions.AllowAny,)
