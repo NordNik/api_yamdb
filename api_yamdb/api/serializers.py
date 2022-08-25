@@ -2,15 +2,15 @@ from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from reviews.models import User, ConfirmationData
 from django.shortcuts import get_object_or_404
-from rest_framework import status
 
 
-class AuthSerializer(ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['username', 'email']
+class AuthSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150, required=True)
+    email = serializers.EmailField(required=True)
 
     def validate(self, data):
+        if data['username'].lower() == 'me':
+            raise serializers.ValidationError("You can't use 'me' as username")
         instance = ConfirmationData.objects.filter(
             confirmation_email=data['email'],
             confirmation_username=data['username'],
@@ -28,12 +28,23 @@ class TokenSerializer(ModelSerializer):
         fields = ['username', 'confirmation_code']
 
     def create(self, validated_data):
-        user = get_object_or_404(
+        user_data = get_object_or_404(
             ConfirmationData,
             confirmation_username=validated_data['confirmation_username'],
             confirmation_code=validated_data['confirmation_code']
         )
+        user = User.objects.filter(username=user_data.confirmation_username)
+        if user.exists():
+            return user.get()
         return User.objects.create_user(
-            email=user.confirmation_email,
-            username=user.confirmation_username
+            email=user_data.confirmation_email,
+            username=user_data.confirmation_username
         )
+
+
+class UserSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        ]

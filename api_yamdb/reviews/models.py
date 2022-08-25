@@ -1,20 +1,21 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+
 ROLE_CHOICES = [
-    ('US', 'user'),
-    ('MD', 'moderator'),
-    ('AD', 'admin'),
+    ('user', 'Пользователь'),
+    ('moderator', 'Модератор'),
+    ('admin', 'Админ'),
 ]
 
 
 class User(AbstractUser):
     bio = models.TextField(verbose_name='Biography', blank=True)
     role = models.CharField(
-        max_length=2, verbose_name='Role', choices=ROLE_CHOICES, default='US'
+        max_length=2, verbose_name='Role', choices=ROLE_CHOICES, default='user'
     )
-    password = None
-    email = models.EmailField()
+    password = models.CharField(max_length=20, null=True)
+    email = models.EmailField(unique=True)
 
 
 class ConfirmationData(models.Model):
