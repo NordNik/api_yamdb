@@ -15,3 +15,10 @@ class AdminPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         return not request.user.is_anonymous and request.user.role == 'AD'
+
+
+class IsSuperUserPermission(permissions.BasePermission):
+    """Allow make request for superuser"""
+
+    def has_permission(self, request, view):
+        return request.user.is_superuser is True

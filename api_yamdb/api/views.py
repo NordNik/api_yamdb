@@ -11,7 +11,9 @@ from .serializers import (
 from .utils import (
     send_confirmation_mail, get_confirmation_code, get_tokens_for_user
 )
-from .permissions import SignupPermission, AdminPermission
+from .permissions import (
+    SignupPermission, AdminPermission, IsSuperUserPermission
+)
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
@@ -21,7 +23,7 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 @api_view(['POST'])
-@permission_classes([SignupPermission])
+@permission_classes([SignupPermission | IsSuperUserPermission])
 def signup(request):
     """
     Sends confirmation mail to mentioned email, and save data about user.
@@ -63,7 +65,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = PageNumberPagination
-    permission_classes = [AdminPermission]
+    permission_classes = [AdminPermission | IsSuperUserPermission]
 
     def update(self, request, username=None):
         """Forbid a PUT method."""
