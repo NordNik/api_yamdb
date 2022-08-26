@@ -59,10 +59,10 @@ def signup(request):
     """
     Sends confirmation mail to mentioned email, and save data about user.
 
-    Whenever user sends post request to signup endpoint the function 
-    take username and email, and confirmation code. User data save into 
-    ConfirmationData model which being a place of storage of email, username, 
-    confirmation code. 
+    Whenever user sends post request to signup endpoint the function
+    take username and email, and confirmation code. User data save into
+    ConfirmationData model which being a place of storage of email, username,
+    confirmation code.
     """
     serializer = AuthSerializer(data=request.data)
     if not serializer.is_valid():
@@ -122,7 +122,7 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = MeSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(
-               data=serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                data=serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
