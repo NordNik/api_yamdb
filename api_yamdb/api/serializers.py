@@ -23,7 +23,7 @@ class TitlesSerializer(serializers.ModelSerializer):
         model = Title
 
 
-class CommentSerializer(serializers.ModelSerializer):
+class RewiewsSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
