@@ -7,7 +7,9 @@ class SignupPermission(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        return not request.user.is_authenticated or request.user.role == 'admin'
+        return (
+            not request.user.is_authenticated or request.user.role == 'admin'
+        )
 
 
 class AdminPermission(permissions.BasePermission):

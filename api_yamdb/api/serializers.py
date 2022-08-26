@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from django.shortcuts import get_object_or_404
+from rest_framework.generics import get_object_or_404
 
-from reviews.models import (
-    User, ConfirmationData, Categorie, Genre, Title, Comment)
+from reviews.models import (User, Categorie, Genre, Title, Comment)
+from .utils import get_confirmation_code, send_confirmation_mail
 
 
 class GenresSerializer(serializers.ModelSerializer):
@@ -33,9 +33,10 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
 
 
-class AuthSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150, required=True)
-    email = serializers.EmailField(required=True)
+class AuthSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'email')
 
     def validate(self, data):
         """
@@ -43,38 +44,38 @@ class AuthSerializer(serializers.Serializer):
         """
         if data['username'].lower() == 'me':
             raise serializers.ValidationError("You can't use 'me' as username")
-        instance = ConfirmationData.objects.filter(
-            confirmation_email=data['email'],
-            confirmation_username=data['username'],
-        )
-        if instance.exists():
-            instance.delete()
         return data
-
-
-class TokenSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source='confirmation_username')
-
-    class Meta:
-        model = ConfirmationData
-        fields = ['username', 'confirmation_code']
 
     def create(self, validated_data):
         """
-        Create new user or get object from User model if user allready exists.
+        Generate code and send it to mentioned email and create user.
         """
-        user_data = get_object_or_404(
-            ConfirmationData,
-            confirmation_username=validated_data['confirmation_username'],
-            confirmation_code=validated_data['confirmation_code']
-        )
-        user = User.objects.filter(username=user_data.confirmation_username)
-        if user.exists():
-            return user.get()
+        email = validated_data['email']
+        username = validated_data['username']
+        code = get_confirmation_code()
+        send_confirmation_mail(email=email, code=code)
         return User.objects.create_user(
-            email=user_data.confirmation_email,
-            username=user_data.confirmation_username
+            email=email,
+            username=username,
+            confirmation_code=code
         )
+
+
+class TokenSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    confirmation_code = serializers.CharField(max_length=8)
+
+    def validate_confirmation_code(self, value):
+        if len(value) != 8:
+            raise serializers.ValidationError(
+                "Code must be 8 characters long "
+            )
+        return value
+
+    def validate_username(self, value):
+        """Check if user exists, if not raised 404 error"""
+        get_object_or_404(User, username=value)
+        return value
 
 
 class UserSerializer(serializers.ModelSerializer):
