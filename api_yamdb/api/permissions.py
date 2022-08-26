@@ -7,14 +7,14 @@ class SignupPermission(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        return not request.user.is_authenticated or request.user.role == 'AD'
+        return not request.user.is_authenticated or request.user.role == 'admin'
 
 
 class AdminPermission(permissions.BasePermission):
     """Allow make request for admin only."""
 
     def has_permission(self, request, view):
-        return not request.user.is_anonymous and request.user.role == 'AD'
+        return not request.user.is_anonymous and request.user.role == 'admin'
 
 
 class IsSuperUserPermission(permissions.BasePermission):
