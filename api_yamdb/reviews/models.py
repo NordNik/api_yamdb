@@ -19,23 +19,17 @@ class User(AbstractUser):
 
 
 class ConfirmationData(models.Model):
-    confirmation_email = models.EmailField()
-    confirmation_username = models.CharField(max_length=19)
-    confirmation_code = models.CharField(max_length=8)
-
-
-class ConfirmationData(models.Model):
     confirmation_email = models. EmailField()
     confirmation_username = models.CharField(max_length=19)
     confirmation_code = models. CharField(max_length=8)
 
 
 class Categorie(models.Model):
-    categorie_name = models.CharField(max_length=200)
-    categorie_slug = models.SlugField(unique=True)
+    category_name = models.CharField(max_length=200)
+    category_slug = models.SlugField(unique=True)
 
     def __str__(self):
-        return self.categorie_name
+        return self.category_name
 
 
 class Genre(models.Model):
@@ -48,17 +42,17 @@ class Genre(models.Model):
 
 class Title(models.Model):
     title_name = models.TextField()
-    categorie = models.ForeignKey(
+    category = models.ForeignKey(
         Categorie, on_delete=models.CASCADE,
         related_name='titles', blank=False, null=False
     )
-    genre = models.ManyToManyField(
-        Genre,
-        related_name='titles'
+    genre = models.ForeignKey(
+        Genre, on_delete=models.CASCADE,
+        related_name='titles', blank=False, null=False
     )
 
     def __str__(self):
-        return self.title_name
+        return self.name
 
 
 class Comment(models.Model):
