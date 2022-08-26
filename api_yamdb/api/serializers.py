@@ -39,9 +39,7 @@ class AuthSerializer(serializers.ModelSerializer):
         fields = ('username', 'email')
 
     def validate(self, data):
-        """
-        Forbide a 'me' username and delete old confirmation data if it exists.
-        """
+        """Forbide a 'me' username."""
         if data['username'].lower() == 'me':
             raise serializers.ValidationError("You can't use 'me' as username")
         return data
