@@ -22,12 +22,12 @@ def send_confirmation_mail(email, code):
 
 
 def get_confirmation_code():
-    """Generate confirmation code"""
+    """Generate confirmation code."""
     return ''.join(choices(ascii_uppercase + digits, k=CODE_LENGTH))
 
 
 def get_tokens_for_user(user):
-    """Get token for user"""
+    """Get token for user."""
     refresh = RefreshToken.for_user(user)
 
     return {
