@@ -7,8 +7,10 @@ from rest_framework.decorators import api_view, permission_classes
 from .utils import (
     send_confirmation_mail, get_confirmation_code, get_tokens_for_user
 )
+
 from .permissions import (
-    SignupPermission, AdminPermission, IsSuperUserPermission
+    SignupPermission, AdminPermission,
+    IsSuperUserPermission, AdminOrReadOnly
 )
 
 from reviews.models import (
@@ -19,22 +21,24 @@ from .serializers import (
     CommentSerializer)
 
 
-class GenresViewSet(viewsets.ReadOnlyModelViewSet):
+class GenresViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenresSerializer
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (AdminOrReadOnly, )
 
 
-class CategoriesViewSet(viewsets.ReadOnlyModelViewSet):
+class CategoriesViewSet(viewsets.ModelViewSet):
     queryset = Categorie.objects.all()
     serializer_class = CategoriesSerializer
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (AdminOrReadOnly, )
+    pagination_class = None
+    lookup_field = 'slug'
 
 
-class TitlesViewSet(viewsets.ReadOnlyModelViewSet):
+class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitlesSerializer
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (AdminOrReadOnly, )
 
 
 class CommentViewSet(viewsets.ModelViewSet):

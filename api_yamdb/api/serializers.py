@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import ValidationError
 
 from reviews.models import (
     User, ConfirmationData, Categorie, Genre, Title, Comment)
@@ -12,12 +13,30 @@ class GenresSerializer(serializers.ModelSerializer):
 
 
 class CategoriesSerializer(serializers.ModelSerializer):
+
+    def validate(self, data):
+        if self.context['request'].user.role != 'admin':
+            raise ValidationError(
+                "You do not have permission for this action")
+        return data
+
     class Meta:
         fields = '__all__'
+        lookup_field = 'slug'
         model = Categorie
 
 
 class TitlesSerializer(serializers.ModelSerializer):
+    genre = serializers.SlugRelatedField(
+        slug_field='name', read_only=False,
+        queryset=Genre.objects.all(),
+        many=True
+    )
+    category = serializers.SlugRelatedField(
+        slug_field='slug', read_only=False,
+        queryset=Categorie.objects.all()
+    )
+
     class Meta:
         fields = '__all__'
         model = Title

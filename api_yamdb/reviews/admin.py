@@ -13,9 +13,9 @@ admin.site.register(User, UserAdmin)
 
 
 class TitleAdmin(admin.ModelAdmin):
-    list_display = ('title_name', 'categorie')
-    search_fields = ('title_name',)
-    list_filter = ('categorie',)
+    list_display = ('pk', 'name', 'category')
+    search_fields = ('name',)
+    list_filter = ('category',)
 
 
 admin.site.register(Title, TitleAdmin)
