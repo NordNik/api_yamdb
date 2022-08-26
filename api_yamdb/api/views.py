@@ -58,7 +58,6 @@ class CommentViewSet(viewsets.ModelViewSet):
 def signup(request):
     """
     Sends confirmation mail to mentioned email, and save data about user.
-
     """
     serializer = AuthSerializer(data=request.data)
     if not serializer.is_valid():
