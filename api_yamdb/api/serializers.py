@@ -80,12 +80,15 @@ class TokenSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = [
+        fields = (
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
-        ]
+        )
 
 
-#test Below code
-class MeSerializer(UserSerializer):
+class MeSerializer(serializers.ModelSerializer):
     class Meta:
-        read_only_fields = ('role')
+        model = User
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        )
+        read_only_fields = ('role',)

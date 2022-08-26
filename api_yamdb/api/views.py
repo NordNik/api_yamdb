@@ -106,16 +106,23 @@ class UserViewSet(viewsets.ModelViewSet):
         """Forbid a PUT method."""
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-
-#test below code
     @action(
+        detail=False,
         methods=['get', 'patch'],
         permission_classes=[permissions.IsAuthenticated]
     )
     def me(self, request):
         """
-        Get or patch information about requested user accros users/me endpoint.
+        Get or patch information about requested user across users/me endpoint.
         """
-        me = get_object_or_404(User, username=request.user.username)
-        serializer = MeSerializer(me)
-        return Response(serializer.data)
+        if request.method == 'GET':
+            me = get_object_or_404(User, username=request.user.username)
+            serializer = MeSerializer(me)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = MeSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+               data=serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
