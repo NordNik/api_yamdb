@@ -3,7 +3,7 @@ from rest_framework import permissions
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, action
 from .utils import (
     send_confirmation_mail, get_confirmation_code, get_tokens_for_user
 )
@@ -16,7 +16,7 @@ from reviews.models import (
 from .serializers import (
     AuthSerializer, TokenSerializer, UserSerializer,
     GenresSerializer, CategoriesSerializer, TitlesSerializer,
-    CommentSerializer)
+    CommentSerializer, MeSerializer)
 
 
 class GenresViewSet(viewsets.ReadOnlyModelViewSet):
@@ -58,6 +58,11 @@ class CommentViewSet(viewsets.ModelViewSet):
 def signup(request):
     """
     Sends confirmation mail to mentioned email, and save data about user.
+
+    Whenever user sends post request to signup endpoint the function 
+    take username and email, and confirmation code. User data save into 
+    ConfirmationData model which being a place of storage of email, username, 
+    confirmation code. 
     """
     serializer = AuthSerializer(data=request.data)
     if not serializer.is_valid():
@@ -100,3 +105,17 @@ class UserViewSet(viewsets.ModelViewSet):
     def update(self, request, username=None):
         """Forbid a PUT method."""
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+#test below code
+    @action(
+        methods=['get', 'patch'],
+        permission_classes=[permissions.IsAuthenticated]
+    )
+    def me(self, request):
+        """
+        Get or patch information about requested user accros users/me endpoint.
+        """
+        me = get_object_or_404(User, username=request.user.username)
+        serializer = MeSerializer(me)
+        return Response(serializer.data)

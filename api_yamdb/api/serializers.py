@@ -38,6 +38,9 @@ class AuthSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
 
     def validate(self, data):
+        """
+        Forbide a 'me' username and delete old confirmation data if it exists.
+        """
         if data['username'].lower() == 'me':
             raise serializers.ValidationError("You can't use 'me' as username")
         instance = ConfirmationData.objects.filter(
@@ -57,6 +60,9 @@ class TokenSerializer(serializers.ModelSerializer):
         fields = ['username', 'confirmation_code']
 
     def create(self, validated_data):
+        """
+        Create new user or get object from User model if user allready exists.
+        """
         user_data = get_object_or_404(
             ConfirmationData,
             confirmation_username=validated_data['confirmation_username'],
@@ -77,3 +83,9 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         ]
+
+
+#test Below code
+class MeSerializer(UserSerializer):
+    class Meta:
+        read_only_fields = ('role')
