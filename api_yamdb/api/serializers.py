@@ -1,8 +1,10 @@
 from rest_framework import serializers
+
 from django.shortcuts import get_object_or_404
 
 from reviews.models import (
-    User, ConfirmationData, Categorie, Genre, Title, Comment)
+    User, ConfirmationData, Categorie, Genre, Title, Comment, Reviews
+)
 
 
 class GenresSerializer(serializers.ModelSerializer):
@@ -23,7 +25,7 @@ class TitlesSerializer(serializers.ModelSerializer):
         model = Title
 
 
-class RewiewsSerializer(serializers.ModelSerializer):
+class ReviewsSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
@@ -77,3 +79,13 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         ]
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field='username'
+    )
+
+    class Meta:
+        fields = '__all__'
+        model = Reviews

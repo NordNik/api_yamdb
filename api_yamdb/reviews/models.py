@@ -64,7 +64,7 @@ class Title(models.Model):
 class Comment(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='comments')
-    post = models.ForeignKey(
+    title = models.ForeignKey(
         Title, on_delete=models.CASCADE, related_name='comments')
     text = models.TextField()
     created = models.DateTimeField(
@@ -74,9 +74,20 @@ class Comment(models.Model):
 class Vote(models.Model):
     value = models.SmallIntegerField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    post = models.ForeignKey(Title, on_delete=models.CASCADE)
+    title = models.ForeignKey(Title, on_delete=models.CASCADE)
     voted_on = models.DateTimeField(auto_now=True)
 
     class Meta:
         # эта команда не даст повторно голосовать
-        unique_together = ('user', 'post')
+        unique_together = ('user', 'title')
+
+
+class Reviews(models.Model):
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='reviews')
+    title = models.ForeignKey(
+        Title, on_delete=models.CASCADE, related_name='reviews')
+    text = models.TextField()
+    created = models.DateTimeField(
+        'Дата добавления', auto_now_add=True, db_index=True
+)
