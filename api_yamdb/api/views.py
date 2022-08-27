@@ -2,9 +2,8 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, action
-from .utils import (
-    send_confirmation_mail, get_confirmation_code, get_tokens_for_user
-)
+from .utils import get_tokens_for_user
+
 from .permissions import (
     SignupPermission, AdminPermission,
     IsSuperUserPermission, AdminOrReadOnly
