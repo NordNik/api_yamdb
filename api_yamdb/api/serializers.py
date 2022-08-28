@@ -1,34 +1,61 @@
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
+from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import (User, Categorie, Genre, Title, Comment)
 from .utils import get_confirmation_code, send_confirmation_mail
 
 
+def auth_client(user):
+    refresh = RefreshToken.for_user(user)
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
+    return client
+
+
 class GenresSerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = '__all__'
-        model = Genre
-
-
-class CategoriesSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
+        if not self.context['request'].user.is_authenticated:
+            raise ValidationError(
+                "You do not have permission for this action")
         if self.context['request'].user.role != 'admin':
             raise ValidationError(
                 "You do not have permission for this action")
         return data
 
     class Meta:
-        fields = '__all__'
+        fields = (
+            'name', 'slug',
+        )
+        model = Genre
+        lookup_field = 'slug'
+
+
+class CategoriesSerializer(serializers.ModelSerializer):
+
+    def validate(self, data):
+        if not self.context['request'].user.is_authenticated:
+            raise ValidationError(
+                "You do not have permission for this action")
+        if self.context['request'].user.role != 'admin':
+            raise ValidationError(
+                "You do not have permission for this action")
+        return data
+
+    class Meta:
+        fields = (
+            'id', 'name', 'slug',
+        )
         lookup_field = 'slug'
         model = Categorie
 
 
 class TitlesSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
-        slug_field='name', read_only=False,
+        slug_field='slug', read_only=False,
         queryset=Genre.objects.all(),
         many=True
     )
@@ -36,9 +63,19 @@ class TitlesSerializer(serializers.ModelSerializer):
         slug_field='slug', read_only=False,
         queryset=Categorie.objects.all()
     )
+    print('genre S: {}'.format(genre))
+    print('category S: {}'.format(category))
+
+    '''def validate(self):
+        if self.request['request'].method in permissions.SAFE_METHODS:
+            admin_client = auth_client(self.context['request'].user)
+            response = admin_client.get('/api/v1/titles/')
+            print(response)'''
 
     class Meta:
-        fields = '__all__'
+        fields = (
+            'id', 'name', 'year', 'genre', 'category', 'description'
+        )
         model = Title
 
 

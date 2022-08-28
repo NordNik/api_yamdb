@@ -2,6 +2,10 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.mixins import (
+    CreateModelMixin, ListModelMixin,
+    UpdateModelMixin, DestroyModelMixin)
+from rest_framework import filters
 from .utils import (
     send_confirmation_mail, get_confirmation_code, get_tokens_for_user
 )
@@ -18,17 +22,20 @@ from .serializers import (
     CommentSerializer, MeSerializer)
 
 
-class GenresViewSet(viewsets.ModelViewSet):
+class GenresViewSet(CreateModelMixin, ListModelMixin,
+                    UpdateModelMixin, DestroyModelMixin):
     queryset = Genre.objects.all()
     serializer_class = GenresSerializer
     permission_classes = (AdminOrReadOnly, )
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('name',)
+    lookup_field = 'slug'
 
 
 class CategoriesViewSet(viewsets.ModelViewSet):
     queryset = Categorie.objects.all()
     serializer_class = CategoriesSerializer
     permission_classes = (AdminOrReadOnly, )
-    pagination_class = None
     lookup_field = 'slug'
 
 
