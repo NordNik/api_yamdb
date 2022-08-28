@@ -27,7 +27,8 @@ from .throttles import NoGuessRateThrottle
 
 
 class GenresViewSet(CreateModelMixin, ListModelMixin,
-                    UpdateModelMixin, DestroyModelMixin):
+                    UpdateModelMixin, DestroyModelMixin,
+                    viewsets.GenericViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenresSerializer
     permission_classes = (AdminOrReadOnly, )
