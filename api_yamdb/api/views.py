@@ -27,8 +27,7 @@ from .throttles import NoGuessRateThrottle
 
 
 class GenresViewSet(CreateModelMixin, ListModelMixin,
-                    UpdateModelMixin, DestroyModelMixin,
-                    viewsets.GenericViewSet):
+                    DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenresSerializer
     permission_classes = (AdminOrReadOnly, )
@@ -37,10 +36,13 @@ class GenresViewSet(CreateModelMixin, ListModelMixin,
     lookup_field = 'slug'
 
 
-class CategoriesViewSet(viewsets.ModelViewSet):
+class CategoriesViewSet(CreateModelMixin, ListModelMixin,
+                        DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Categorie.objects.all()
     serializer_class = CategoriesSerializer
     permission_classes = (AdminOrReadOnly, )
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('name',)
     lookup_field = 'slug'
 
 

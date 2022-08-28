@@ -47,7 +47,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = (
-            'id', 'name', 'slug',
+            'name', 'slug',
         )
         lookup_field = 'slug'
         model = Categorie
