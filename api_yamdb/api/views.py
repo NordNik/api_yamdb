@@ -1,7 +1,8 @@
-from rest_framework import viewsets, status, permissions
+from rest_framework import viewsets, status, permissions, filters
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.decorators import (
+    api_view, permission_classes, action, throttle_classes)
 from rest_framework.mixins import (
     CreateModelMixin, ListModelMixin,
     UpdateModelMixin, DestroyModelMixin)
@@ -9,6 +10,8 @@ from rest_framework import filters
 from .utils import (
     send_confirmation_mail, get_confirmation_code, get_tokens_for_user
 )
+from .utils import get_tokens_for_user
+
 from .permissions import (
     SignupPermission, AdminPermission,
     IsSuperUserPermission, AdminOrReadOnly
@@ -20,6 +23,7 @@ from .serializers import (
     AuthSerializer, TokenSerializer, UserSerializer,
     GenresSerializer, CategoriesSerializer, TitlesSerializer,
     CommentSerializer, MeSerializer)
+from .throttles import NoGuessRateThrottle
 
 
 class GenresViewSet(CreateModelMixin, ListModelMixin,
@@ -78,6 +82,7 @@ def signup(request):
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
+@throttle_classes([NoGuessRateThrottle])
 def token(request):
     """Get and send a token to user which has been validated."""
     serializer = TokenSerializer(data=request.data)
@@ -95,11 +100,13 @@ def token(request):
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    filter_backends = (filters.SearchFilter,)
     lookup_field = 'username'
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [AdminPermission | IsSuperUserPermission]
-    http_method_names = ['get', 'post', 'patch', 'delete']
+    permission_classes = (AdminPermission | IsSuperUserPermission,)
+    http_method_names = ('get', 'post', 'patch', 'delete')
+    search_fields = ('username',)
 
     @action(
         detail=False,
