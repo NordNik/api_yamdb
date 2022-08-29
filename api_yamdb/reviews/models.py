@@ -12,53 +12,45 @@ ROLE_CHOICES = [
 class User(AbstractUser):
     bio = models.TextField(verbose_name='Biography', blank=True)
     role = models.CharField(
-        max_length=2, verbose_name='Role', choices=ROLE_CHOICES, default='user'
+        max_length=9, verbose_name='Role', choices=ROLE_CHOICES, default='user'
     )
-    password = models.CharField(max_length=20, null=True)
+    password = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField(unique=True)
-
-
-class ConfirmationData(models.Model):
-    confirmation_email = models.EmailField()
-    confirmation_username = models.CharField(max_length=19)
-    confirmation_code = models.CharField(max_length=8)
-
-
-class ConfirmationData(models.Model):
-    confirmation_email = models. EmailField()
-    confirmation_username = models.CharField(max_length=19)
-    confirmation_code = models. CharField(max_length=8)
+    confirmation_code = models.CharField(max_length=8,)
 
 
 class Categorie(models.Model):
-    categorie_name = models.CharField(max_length=200)
-    categorie_slug = models.SlugField(unique=True)
+    name = models.CharField(max_length=256)
+    slug = models.SlugField(unique=True, max_length=50)
 
     def __str__(self):
-        return self.categorie_name
+        return self.name
 
 
 class Genre(models.Model):
-    genre_name = models.CharField(max_length=200)
-    genre_slug = models.SlugField(unique=True)
+    name = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True)
 
     def __str__(self):
-        return self.genre_name
+        return self.name
 
 
 class Title(models.Model):
-    title_name = models.TextField()
-    categorie = models.ForeignKey(
-        Categorie, on_delete=models.CASCADE,
-        related_name='titles', blank=False, null=False
+    name = models.TextField()
+    category = models.ForeignKey(
+        Categorie, on_delete=models.SET_NULL,
+        related_name='titles', blank=False, null=True
     )
     genre = models.ManyToManyField(
         Genre,
-        related_name='titles'
+        related_name='titles',
+        blank=True,
     )
+    year = models.PositiveSmallIntegerField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return self.title_name
+        return self.name
 
 
 class Comment(models.Model):
@@ -68,7 +60,8 @@ class Comment(models.Model):
         Title, on_delete=models.CASCADE, related_name='comments')
     text = models.TextField()
     created = models.DateTimeField(
-        'Дата добавления', auto_now_add=True, db_index=True)
+        'Дата добавления', auto_now_add=True, db_index=True
+    )
 
 
 class Vote(models.Model):

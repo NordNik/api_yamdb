@@ -1,27 +1,65 @@
 from rest_framework import serializers
 
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import ValidationError
 
-from reviews.models import (
-    User, ConfirmationData, Categorie, Genre, Title, Comment, Reviews
-)
+from reviews.models import (User, Categorie, Genre, Title, Comment)
+from .utils import get_confirmation_code, send_confirmation_mail
 
 
 class GenresSerializer(serializers.ModelSerializer):
+
+    def validate(self, data):
+        if not self.context['request'].user.is_authenticated:
+            raise ValidationError(
+                "You do not have permission for this action")
+        if self.context['request'].user.role != 'admin':
+            raise ValidationError(
+                "You do not have permission for this action")
+        return data
+
     class Meta:
-        fields = '__all__'
+        fields = (
+            'name', 'slug',
+        )
         model = Genre
+        lookup_field = 'slug'
 
 
 class CategoriesSerializer(serializers.ModelSerializer):
+
+    def validate(self, data):
+        if not self.context['request'].user.is_authenticated:
+            raise ValidationError(
+                "You do not have permission for this action")
+        if self.context['request'].user.role != 'admin':
+            raise ValidationError(
+                "You do not have permission for this action")
+        return data
+
     class Meta:
-        fields = '__all__'
+        fields = (
+            'name', 'slug',
+        )
+        lookup_field = 'slug'
         model = Categorie
 
 
 class TitlesSerializer(serializers.ModelSerializer):
+    genre = serializers.SlugRelatedField(
+        slug_field='slug', read_only=False,
+        queryset=Genre.objects.all(),
+        many=True
+    )
+    category = serializers.SlugRelatedField(
+        slug_field='slug', read_only=False,
+        queryset=Categorie.objects.all()
+    )
+
     class Meta:
-        fields = '__all__'
+        fields = (
+            'id', 'name', 'year', 'genre', 'category', 'description'
+        )
         model = Title
 
 
@@ -35,50 +73,55 @@ class ReviewsSerializer(serializers.ModelSerializer):
         model = Comment
 
 
-class AuthSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150, required=True)
-    email = serializers.EmailField(required=True)
+class AuthSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'email')
 
     def validate(self, data):
+        """Forbide a 'me' username."""
         if data['username'].lower() == 'me':
             raise serializers.ValidationError("You can't use 'me' as username")
-        instance = ConfirmationData.objects.filter(
-            confirmation_email=data['email'],
-            confirmation_username=data['username'],
-        )
-        if instance.exists():
-            instance.delete()
         return data
 
-
-class TokenSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source='confirmation_username')
-
-    class Meta:
-        model = ConfirmationData
-        fields = ['username', 'confirmation_code']
-
     def create(self, validated_data):
-        user_data = get_object_or_404(
-            ConfirmationData,
-            confirmation_username=validated_data['confirmation_username'],
-            confirmation_code=validated_data['confirmation_code']
-        )
-        user = User.objects.filter(username=user_data.confirmation_username)
-        if user.exists():
-            return user.get()
+        """
+        Generate code and send it to mentioned email and create user.
+        """
+        email = validated_data['email']
+        username = validated_data['username']
+        code = get_confirmation_code()
+        send_confirmation_mail(email=email, code=code)
         return User.objects.create_user(
-            email=user_data.confirmation_email,
-            username=user_data.confirmation_username
+            email=email,
+            username=username,
+            confirmation_code=code
         )
+
+
+class TokenSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    confirmation_code = serializers.CharField(max_length=8)
+
+    def validate_confirmation_code(self, value):
+        if len(value) != 8:
+            raise serializers.ValidationError(
+                "Code must be 8 characters long "
+            )
+        return value
+
+    def validate_username(self, value):
+        """Check if user exists, if not raised 404 error"""
+        get_object_or_404(User, username=value)
+        return value
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = [
+        fields = (
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
-        ]
+        )
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -89,3 +132,12 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Reviews
+
+
+class MeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        )
+        read_only_fields = ('role', 'username', 'email')
