@@ -88,6 +88,11 @@ class Test04TitleAPI:
             'Проверьте, что при GET запросе `/api/v1/titles/` возвращаете данные с пагинацией. '
             'Значение параметра `results` неправильное, `rating` без отзывов должен быть равен `None`'
         )
+        print(title)
+        print(genres[0])
+        print(title.get('genre'))
+        print(categories[0])
+        print(title.get('category'))
         assert title.get('category') == categories[0], (
             'Проверьте, что при GET запросе `/api/v1/titles/` возвращаете данные с пагинацией. '
             'Значение параметра `results` неправильное, значение `category` неправильное '
