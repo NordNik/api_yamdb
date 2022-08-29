@@ -34,7 +34,7 @@ class Genres(models.Model):
         return self.genre_name
 
 
-class Titles(models.Model):
+class Title(models.Model):
     title_name = models.TextField()
     category = models.ForeignKey(
         Categories, on_delete=models.CASCADE,
@@ -49,32 +49,40 @@ class Titles(models.Model):
         return self.name
 
 
+class Review(models.Model):
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='reviews')
+    title = models.ForeignKey(
+        Title, on_delete=models.CASCADE, related_name='reviews')
+    text = models.TextField()
+    created = models.DateTimeField(
+        'Дата добавления', auto_now_add=True, db_index=True)
+
+
 class Comment(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='comments')
     title = models.ForeignKey(
-        Titles, on_delete=models.CASCADE, related_name='comments')
+        Title, on_delete=models.CASCADE, related_name='comments')
     text = models.TextField()
     created = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True)
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        verbose_name='Отзыв',
+        related_name='comments',
+        help_text='Отзыв, к которому написан комментарий'
+    )
 
 
 class Vote(models.Model):
     value = models.SmallIntegerField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.ForeignKey(Titles, on_delete=models.CASCADE)
+    title = models.ForeignKey(Title, on_delete=models.CASCADE)
     voted_on = models.DateTimeField(auto_now=True)
 
     class Meta:
-        # эта команда не даст повторно голосовать
         unique_together = ('user', 'title')
-
-
-class Reviews(models.Model):
-    author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='reviews')
-    title = models.ForeignKey(
-        Titles, on_delete=models.CASCADE, related_name='reviews')
-    text = models.TextField()
-    created = models.DateTimeField(
-        'Дата добавления', auto_now_add=True, db_index=True)
