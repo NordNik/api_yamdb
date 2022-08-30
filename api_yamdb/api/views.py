@@ -5,12 +5,14 @@ from rest_framework.decorators import (
     api_view, permission_classes, action, throttle_classes)
 from rest_framework.mixins import (
     CreateModelMixin, ListModelMixin,
-    UpdateModelMixin, DestroyModelMixin)
+    UpdateModelMixin, DestroyModelMixin, RetrieveModelMixin)
 from rest_framework import filters
 from .utils import (
     send_confirmation_mail, get_confirmation_code, get_tokens_for_user
 )
 from .utils import get_tokens_for_user
+import django_filters
+from django_filters.rest_framework import DjangoFilterBackend
 
 from .permissions import (
     SignupPermission, AdminPermission,
@@ -21,8 +23,8 @@ from reviews.models import (
     User, Genre, Categorie, Title, Comment)
 from .serializers import (
     AuthSerializer, TokenSerializer, UserSerializer,
-    GenresSerializer, CategoriesSerializer, TitlesSerializer,
-    CommentSerializer, MeSerializer)
+    GenresSerializer, CategoriesSerializer, TitleReadSerializer,
+    TitlesPOSTSerializer, CommentSerializer, MeSerializer)
 from .throttles import NoGuessRateThrottle
 
 
@@ -46,10 +48,30 @@ class CategoriesViewSet(CreateModelMixin, ListModelMixin,
     lookup_field = 'slug'
 
 
-class TitlesViewSet(viewsets.ModelViewSet):
+class TitleFilter(django_filters.FilterSet):
+    name = django_filters.CharFilter(
+        field_name='name', lookup_expr='icontains')
+    category = django_filters.CharFilter(field_name='category__slug')
+    genre = django_filters.CharFilter(field_name='genre__slug')
+    year = django_filters.NumberFilter(field_name='year')
+
+    class Meta:
+        model = Title
+        fields = ['name', 'genre', 'category', 'year']
+
+
+class TitlesViewSet(CreateModelMixin, ListModelMixin,
+                    RetrieveModelMixin, UpdateModelMixin,
+                    DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Title.objects.all()
-    serializer_class = TitlesSerializer
     permission_classes = (AdminOrReadOnly, )
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TitleFilter
+
+    def get_serializer_class(self):
+        if self.request.method in ('POST', 'PATCH',):
+            return TitlesPOSTSerializer
+        return TitleReadSerializer
 
 
 class CommentViewSet(viewsets.ModelViewSet):
