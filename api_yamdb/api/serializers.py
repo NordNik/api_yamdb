@@ -5,7 +5,7 @@ from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import permissions
 
-from reviews.models import (User, Categorie, Genre, Title, Comment)
+from reviews.models import (User, Categorie, Genre, Title, Comment, GenreTitle)
 from .utils import get_confirmation_code, send_confirmation_mail
 
 
@@ -50,20 +50,27 @@ class CategoriesSerializer(serializers.ModelSerializer):
         fields = (
             'name', 'slug',
         )
-        lookup_field = 'slug'
         model = Categorie
+        lookup_field = 'slug'
 
 
-class TitlesSerializer(serializers.ModelSerializer):
+class TitleReadSerializer(serializers.ModelSerializer):
+    genre = GenresSerializer(many=True,)
+    category = CategoriesSerializer()
+
+    class Meta:
+        fields = (
+            'id', 'name', 'year', 'genre', 'category', 'description'
+        )
+        model = Title
+
+
+class TitlesPOSTSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
-        slug_field='slug', read_only=False,
-        queryset=Genre.objects.all(),
-        many=True
-    )
+        slug_field='slug', many=True,
+        queryset=Genre.objects.all())
     category = serializers.SlugRelatedField(
-        slug_field='slug', read_only=False,
-        queryset=Categorie.objects.all()
-    )
+        slug_field='slug', queryset=Categorie.objects.all())
 
     class Meta:
         fields = (
