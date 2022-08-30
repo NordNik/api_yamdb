@@ -1,6 +1,6 @@
 # Description
 
-This project is made by Nikolai Orlov (t.me/Nikolai_Orlov)(t.me/Nikolai_Orlov) as an additional project to add some API functionality to blog Yatube (https://github.com/NordNik/hw05_final).
+This project is made by ... as a pet project.
 
 # Getting started
 The project was made using Django 2.2.16 and Python 3.7. Other necessary packajes are noticed in requirements.txt.
