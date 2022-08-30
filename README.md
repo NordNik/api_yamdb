@@ -1,7 +1,3 @@
-# Description
-
-This project is made by Nikolai Orlov team (t.me/Nikolai_Orlov)(t.me/Nikolai_Orlov) as an additional project to add some API functionality to blog Yatube (https://github.com/NordNik/hw05_final).
-
 # About
 The YaMDb project collects user reviews on works (Titles). The works are divided into categories: "Books", "Films", "Music". The list of categories can be expanded by the administrator (for example, you can add the category "Fine Art" or "Jewelry").
 The works themselves are not stored in YaMDb, you cannot watch a movie or listen to music here.
