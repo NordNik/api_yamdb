@@ -84,19 +84,19 @@ class ReviewSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = ('id', 'text', 'author', 'score', 'title', 'pub_date')
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
         model = Review
-        validators = [
+        '''validators = [
             UniqueTogetherValidator(
                 queryset=Review.objects.all(),
                 fields=['author', 'title'],
             )
-        ]
+        ]'''
 
-    def validate_score(self, value):
+    '''def validate_score(self, value):
         if 0 > value > 10:
             raise serializers.ValidationError('Оценка по 10-бальной шкале!')
-        return value
+        return value'''
 
     '''def validate(self, data):
         request = self.context['request']
