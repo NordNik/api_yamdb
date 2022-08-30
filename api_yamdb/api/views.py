@@ -55,7 +55,7 @@ class TitleFilter(django_filters.FilterSet):
 
     class Meta:
         model = Title
-        fields = ['name', 'genre', 'category', 'year']
+        fields = ['name', 'genre', 'category', 'year', ]
 
 
 class TitlesViewSet(CreateModelMixin, ListModelMixin,
@@ -72,7 +72,9 @@ class TitlesViewSet(CreateModelMixin, ListModelMixin,
         return TitleReadSerializer
 
 
-class ReviewViewSet(viewsets.ModelViewSet):
+class ReviewViewSet(CreateModelMixin, ListModelMixin,
+                    RetrieveModelMixin, UpdateModelMixin,
+                    DestroyModelMixin, viewsets.GenericViewSet):
     """Обработчик запросов к модели Review."""
     serializer_class = ReviewSerializer
     permission_classes = (IsAuthorOrReadOnly,)

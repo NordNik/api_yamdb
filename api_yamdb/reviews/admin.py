@@ -17,7 +17,7 @@ admin.site.register(User, UserAdmin)
 
 
 class TitleAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'category')
+    list_display = ('pk', 'name', 'category', 'rating')
     search_fields = ('name',)
     list_filter = ('category',)
 
@@ -25,13 +25,5 @@ class TitleAdmin(admin.ModelAdmin):
 admin.site.register(Title, TitleAdmin)
 admin.site.register(Categorie)
 admin.site.register(Genre)
-
-
-class ReviewAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'author', 'title', 'text', 'pub_date', 'rating')
-    search_fields = ('author',)
-    list_filter = ('author', 'pub_date')
-
-
-admin.site.register(Review)#, ReviewAdmin)
+admin.site.register(Review)
 admin.site.register(Comment)

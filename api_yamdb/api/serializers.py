@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
-
+from django.db.models import Avg
 from django.core.validators import MinValueValidator, MaxValueValidator
+from rest_framework.validators import UniqueTogetherValidator
 
 from reviews.models import (User, Categorie, Genre, Title, Comment, Review)
 from .utils import get_confirmation_code, send_confirmation_mail
@@ -52,7 +53,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = (
-            'id', 'name', 'year', 'genre', 'category', 'description'
+            'id', 'name', 'year', 'genre', 'category', 'description', 'rating'
         )
         model = Title
 
@@ -66,7 +67,7 @@ class TitlesPOSTSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = (
-            'id', 'name', 'year', 'genre', 'category', 'description'
+            'id', 'name', 'year', 'genre', 'category', 'description', 'rating'
         )
         model = Title
 
@@ -75,7 +76,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
-    rating = serializers.IntegerField(
+    score = serializers.IntegerField(
         validators=(
             MinValueValidator(1),
             MaxValueValidator(10)
@@ -83,8 +84,31 @@ class ReviewSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = ('id', 'text', 'author', 'rating', 'pub_date')
+        fields = ('id', 'text', 'author', 'score', 'title', 'pub_date')
         model = Review
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Review.objects.all(),
+                fields=['author', 'title'],
+            )
+        ]
+
+    def validate_score(self, value):
+        if 0 > value > 10:
+            raise serializers.ValidationError('Оценка по 10-бальной шкале!')
+        return value
+
+    '''def validate(self, data):
+        request = self.context['request']
+        author = request.user
+        title_id = self.context.get('view').kwargs.get('title_id')
+        title = get_object_or_404(Title, pk=title_id)
+        if (
+            request.method == 'POST'
+            and Comment.objects.filter(title=title, author=author).exists()
+        ):
+            raise ValidationError('Можно оставить только один отзыв')
+        return data'''
 
 
 class AuthSerializer(serializers.ModelSerializer):
@@ -143,23 +167,7 @@ class CommentSerializer(serializers.ModelSerializer):
         slug_field='username',
         read_only=True
     )
-
-    def validate_score(self, value):
-        if 0 > value > 10:
-            raise serializers.ValidationError('Оценка по 10-бальной шкале!')
-        return value
-
-    def validate(self, data):
-        request = self.context['request']
-        author = request.user
-        title_id = self.context.get('view').kwargs.get('title_id')
-        title = get_object_or_404(Title, pk=title_id)
-        if (
-            request.method == 'POST'
-            and Comment.objects.filter(title=title, author=author).exists()
-        ):
-            raise ValidationError('Можно оставить только один отзыв')
-        return data
+    review = serializers.CharField(read_only=True)
 
     class Meta:
         fields = ('id', 'author', 'text', 'pub_date', 'review')

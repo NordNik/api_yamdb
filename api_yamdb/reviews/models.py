@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models import Avg
+
 
 ROLE_CHOICES = [
     ('user', 'Пользователь'),
@@ -49,6 +51,11 @@ class Title(models.Model):
     year = models.PositiveSmallIntegerField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
 
+    @property
+    def rating(self):
+        return self.reviews.all().aggregate(Avg('score')).get(
+            'score__avg', 0.00)
+
     def __str__(self):
         return self.name
 
@@ -61,13 +68,13 @@ class Review(models.Model):
     text = models.TextField()
     pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True)
-    rating = models.IntegerField(
+    score = models.IntegerField(
         'Оценка',
         validators=[
             MinValueValidator(1),
             MaxValueValidator(10)
         ],
-        help_text='Введдите оценку'
+        help_text='Введдите оценку',
     )
 
     def __str__(self):
