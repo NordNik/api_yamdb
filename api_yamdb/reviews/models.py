@@ -61,7 +61,7 @@ class Review(models.Model):
     text = models.TextField()
     pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True)
-    score = models.IntegerField(
+    rating = models.IntegerField(
         'Оценка',
         validators=[
             MinValueValidator(1),
@@ -69,6 +69,9 @@ class Review(models.Model):
         ],
         help_text='Введдите оценку'
     )
+
+    def __str__(self):
+        return self.text[:30]
 
 
 class Comment(models.Model):
@@ -78,7 +81,8 @@ class Comment(models.Model):
         related_name='comments',
         verbose_name='Комментируемый отзыв'
     )
-    text = models.TextField(max_length=5000,
+    text = models.TextField(
+        max_length=5000,
         verbose_name='Текст комментария')
     author = models.ForeignKey(
         User, on_delete=models.CASCADE,
@@ -90,4 +94,4 @@ class Comment(models.Model):
     )
 
     def __str__(self):
-        return f'{self.author.username}, {self.text}, {self.score}, {self.pub_date}'
+        return f'{self.author.username}, {self.text}, {self.pub_date}'

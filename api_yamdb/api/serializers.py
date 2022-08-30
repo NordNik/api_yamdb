@@ -75,7 +75,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
-    score = serializers.IntegerField(
+    rating = serializers.IntegerField(
         validators=(
             MinValueValidator(1),
             MaxValueValidator(10)
@@ -83,7 +83,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        fields = ('id', 'text', 'author', 'rating', 'pub_date')
         model = Review
 
 
