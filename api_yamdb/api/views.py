@@ -7,24 +7,22 @@ from rest_framework.mixins import (
     CreateModelMixin, ListModelMixin,
     UpdateModelMixin, DestroyModelMixin, RetrieveModelMixin)
 from rest_framework import filters
-from .utils import (
-    send_confirmation_mail, get_confirmation_code, get_tokens_for_user
-)
 from .utils import get_tokens_for_user
 import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .permissions import (
     SignupPermission, AdminPermission,
-    IsSuperUserPermission, AdminOrReadOnly
+    IsSuperUserPermission, AdminOrReadOnly,
+    IsAuthorOrReadOnly
 )
 
 from reviews.models import (
-    User, Genre, Categorie, Title, Comment)
+    User, Genre, Categorie, Title, Comment, Review)
 from .serializers import (
     AuthSerializer, TokenSerializer, UserSerializer,
     GenresSerializer, CategoriesSerializer, TitleReadSerializer,
-    TitlesPOSTSerializer, CommentSerializer, MeSerializer)
+    TitlesPOSTSerializer, CommentSerializer, MeSerializer, ReviewSerializer)
 from .throttles import NoGuessRateThrottle
 
 
@@ -74,20 +72,34 @@ class TitlesViewSet(CreateModelMixin, ListModelMixin,
         return TitleReadSerializer
 
 
-class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
-    permission_classes = []
+class ReviewViewSet(viewsets.ModelViewSet):
+    """Обработчик запросов к модели Review."""
+    serializer_class = ReviewSerializer
+    permission_classes = (IsAuthorOrReadOnly,)
 
     def get_queryset(self):
-        return get_object_or_404(Title,
-                                 id=self.kwargs.get('post_id')).comments.all()
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        new_queryset = title.reviews.all()
+        return new_queryset
 
     def perform_create(self, serializer):
-        serializer.save(
-            author=self.request.user,
-            post=get_object_or_404(Title, id=self.kwargs.get('post_id'))
-        )
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        serializer.save(author=self.request.user, title=title)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    """Обработчик запросов к модели Comment."""
+    serializer_class = CommentSerializer
+    permission_classes = (IsAuthorOrReadOnly,)
+
+    def get_queryset(self):
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        new_queryset = review.comments.all()
+        return new_queryset
+
+    def perform_create(self, serializer):
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        serializer.save(author=self.request.user, review_id=review.id)
 
 
 @api_view(['POST'])
