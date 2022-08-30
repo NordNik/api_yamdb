@@ -9,8 +9,8 @@ In each category there are works: books, movies or music. For example, in the ca
 A work can be assigned a genre from the preset list (for example, "Fairy Tale", "Rock" or "Arthouse"). Only the administrator can create new genres.
 Grateful or outraged users leave text reviews for the works and give the work a rating in the range from one to ten (an integer); an average rating of the work is formed from user ratings — a rating (an integer). The user can leave only one review for one work.
 
-
 # Getting started
+
 The project was made using Django 2.2.16 and Python 3.7. Other necessary packajes are noticed in requirements.txt.
 
 First, clone the repository from Github and switch to the new directory:
