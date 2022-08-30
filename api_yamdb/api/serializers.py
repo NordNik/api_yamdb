@@ -3,9 +3,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework import permissions
 
-from reviews.models import (User, Categorie, Genre, Title, Comment, GenreTitle)
+from reviews.models import (User, Categorie, Genre, Title, Comment)
 from .utils import get_confirmation_code, send_confirmation_mail
 
 
