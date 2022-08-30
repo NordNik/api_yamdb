@@ -2,7 +2,9 @@ from rest_framework import serializers
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
 
-from reviews.models import (User, Categorie, Genre, Title, Comment)
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+from reviews.models import (User, Categorie, Genre, Title, Comment, Review)
 from .utils import get_confirmation_code, send_confirmation_mail
 
 
@@ -62,17 +64,20 @@ class TitlesSerializer(serializers.ModelSerializer):
         model = Title
 
 
-class ReviewsSerializer(serializers.ModelSerializer):
+class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
-    review = serializers.SlugRelatedField(
-        read_only=True, slug_field='text'
+    score = serializers.IntegerField(
+        validators=(
+            MinValueValidator(1),
+            MaxValueValidator(10)
+        )
     )
 
     class Meta:
-        fields = '__all__'
-        model = Comment
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        model = Review
 
 
 class AuthSerializer(serializers.ModelSerializer):
@@ -144,14 +149,14 @@ class CommentSerializer(serializers.ModelSerializer):
         title = get_object_or_404(Title, pk=title_id)
         if (
             request.method == 'POST'
-            and Review.objects.filter(title=title, author=author).exists()
+            and Comment.objects.filter(title=title, author=author).exists()
         ):
             raise ValidationError('Можно оставить только один отзыв')
         return data
 
     class Meta:
-        fields = '__all__'
-        model = Review
+        fields = ('id', 'author', 'text', 'pub_date', 'review')
+        model = Comment
 
 
 class MeSerializer(serializers.ModelSerializer):
