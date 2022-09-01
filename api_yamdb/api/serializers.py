@@ -1,10 +1,8 @@
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
-from django.db.models import Avg
 from django.core.validators import MinValueValidator, MaxValueValidator
-from rest_framework.validators import UniqueTogetherValidator
-from django.core.exceptions import PermissionDenied
+
 from reviews.models import (User, Categorie, Genre, Title, Comment, Review)
 from .utils import get_confirmation_code, send_confirmation_mail
 
@@ -86,29 +84,6 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'text', 'author', 'score', 'pub_date')
         model = Review
-        '''validators = [
-            UniqueTogetherValidator(
-                queryset=Review.objects.all(),
-                fields=['author', 'title'],
-            )
-        ]'''
-
-    '''def validate_score(self, value):
-        if 0 > value > 10:
-            raise serializers.ValidationError('Оценка по 10-бальной шкале!')
-        return value'''
-
-    '''def validate(self, data):
-        request = self.context['request']
-        author = request.user
-        title_id = self.context.get('view').kwargs.get('title_id')
-        title = get_object_or_404(Title, pk=title_id)
-        if (
-            request.method == 'POST'
-            and Comment.objects.filter(title=title, author=author).exists()
-        ):
-            raise ValidationError('Можно оставить только один отзыв')
-        return data'''
 
 
 class AuthSerializer(serializers.ModelSerializer):

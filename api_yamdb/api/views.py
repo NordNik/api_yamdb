@@ -10,6 +10,8 @@ from rest_framework import filters
 from .utils import get_tokens_for_user
 import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.utils import IntegrityError
+from rest_framework.exceptions import ValidationError
 
 from .permissions import (
     SignupPermission, AdminPermission,
@@ -19,7 +21,7 @@ from .permissions import (
 from django.db.utils import IntegrityError
 from rest_framework.exceptions import ValidationError
 from reviews.models import (
-    User, Genre, Categorie, Title, Comment, Review)
+    User, Genre, Categorie, Title, Review)
 from .serializers import (
     AuthSerializer, TokenSerializer, UserSerializer,
     GenresSerializer, CategoriesSerializer, TitleReadSerializer,
@@ -73,9 +75,7 @@ class TitlesViewSet(CreateModelMixin, ListModelMixin,
         return TitleReadSerializer
 
 
-class ReviewViewSet(CreateModelMixin, ListModelMixin,
-                    RetrieveModelMixin, UpdateModelMixin,
-                    DestroyModelMixin, viewsets.GenericViewSet):
+class ReviewViewSet(viewsets.ModelViewSet):
     """Обработчик запросов к модели Review."""
     serializer_class = ReviewSerializer
     permission_classes = (IsAuthorOrReadOnly,)
@@ -90,7 +90,7 @@ class ReviewViewSet(CreateModelMixin, ListModelMixin,
         try:
             serializer.save(author=self.request.user, title=title)
         except IntegrityError:
-            raise ValidationError('подписка на самого себя')
+            raise ValidationError('You cannot review the same title twice')
 
 
 class CommentViewSet(viewsets.ModelViewSet):

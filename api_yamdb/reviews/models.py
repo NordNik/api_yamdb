@@ -77,6 +77,12 @@ class Review(models.Model):
         help_text='Введдите оценку',
     )
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'title'], name='unique review')
+        ]
+
     def __str__(self):
         return self.text[:30]
 
