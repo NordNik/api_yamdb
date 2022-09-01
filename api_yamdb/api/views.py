@@ -16,7 +16,8 @@ from .permissions import (
     IsSuperUserPermission, AdminOrReadOnly,
     IsAuthorOrReadOnly
 )
-
+from django.db.utils import IntegrityError
+from rest_framework.exceptions import ValidationError
 from reviews.models import (
     User, Genre, Categorie, Title, Comment, Review)
 from .serializers import (
@@ -86,7 +87,10 @@ class ReviewViewSet(CreateModelMixin, ListModelMixin,
 
     def perform_create(self, serializer):
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
-        serializer.save(author=self.request.user, title=title)
+        try:
+            serializer.save(author=self.request.user, title=title)
+        except IntegrityError:
+            raise ValidationError('подписка на самого себя')
 
 
 class CommentViewSet(viewsets.ModelViewSet):

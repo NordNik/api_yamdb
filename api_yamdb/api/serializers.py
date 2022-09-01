@@ -4,7 +4,7 @@ from rest_framework.exceptions import ValidationError
 from django.db.models import Avg
 from django.core.validators import MinValueValidator, MaxValueValidator
 from rest_framework.validators import UniqueTogetherValidator
-
+from django.core.exceptions import PermissionDenied
 from reviews.models import (User, Categorie, Genre, Title, Comment, Review)
 from .utils import get_confirmation_code, send_confirmation_mail
 
