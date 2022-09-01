@@ -23,11 +23,11 @@ class User(AbstractUser):
 
     @property
     def is_moderator(self):
-        return self.role is self.MODERATOR
+        return self.role == self.MODERATOR
 
     @property
     def is_admin(self):
-        return self.role is self.ADMIN
+        return self.role == self.ADMIN
 
 
 class Categorie(models.Model):
