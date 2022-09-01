@@ -4,21 +4,30 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Avg
 
 
-ROLE_CHOICES = [
-    ('user', 'Пользователь'),
-    ('moderator', 'Модератор'),
-    ('admin', 'Админ'),
-]
-
-
 class User(AbstractUser):
+    USER = 'user'
+    MODERATOR = 'moderator'
+    ADMIN = 'admin'
+    ROLE_CHOICES = [
+        (USER, 'Пользователь'),
+        (MODERATOR, 'Модератор'),
+        (ADMIN, 'Админ'),
+    ]
     bio = models.TextField(verbose_name='Biography', blank=True)
     role = models.CharField(
-        max_length=9, verbose_name='Role', choices=ROLE_CHOICES, default='user'
+        max_length=9, verbose_name='Role', choices=ROLE_CHOICES, default=USER
     )
     password = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField(unique=True)
     confirmation_code = models.CharField(max_length=8,)
+
+    @property
+    def is_moderator(self):
+        return self.role is self.MODERATOR
+
+    @property
+    def is_admin(self):
+        return self.role is self.ADMIN
 
 
 class Categorie(models.Model):
