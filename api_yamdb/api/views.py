@@ -4,11 +4,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import (
     api_view, permission_classes, action, throttle_classes)
 from rest_framework.mixins import (
-    CreateModelMixin, ListModelMixin,
-    UpdateModelMixin, DestroyModelMixin, RetrieveModelMixin)
+    CreateModelMixin, ListModelMixin, DestroyModelMixin)
 from rest_framework import filters
 from .utils import get_tokens_for_user
-import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.utils import IntegrityError
 from rest_framework.exceptions import ValidationError
@@ -26,10 +24,15 @@ from .serializers import (
     GenresSerializer, CategoriesSerializer, TitleReadSerializer,
     TitlesPOSTSerializer, CommentSerializer, MeSerializer, ReviewSerializer)
 from .throttles import NoGuessRateThrottle
+from filters import TitleFilter
 
 
-class GenresViewSet(CreateModelMixin, ListModelMixin,
-                    DestroyModelMixin, viewsets.GenericViewSet):
+class CreateDeleteViewSet(CreateModelMixin, ListModelMixin,
+                          DestroyModelMixin, viewsets.GenericViewSet):
+    pass
+
+
+class GenresViewSet(CreateDeleteViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenresSerializer
     permission_classes = (AdminOrReadOnly, )
@@ -38,8 +41,7 @@ class GenresViewSet(CreateModelMixin, ListModelMixin,
     lookup_field = 'slug'
 
 
-class CategoriesViewSet(CreateModelMixin, ListModelMixin,
-                        DestroyModelMixin, viewsets.GenericViewSet):
+class CategoriesViewSet(CreateDeleteViewSet):
     queryset = Categorie.objects.all()
     serializer_class = CategoriesSerializer
     permission_classes = (AdminOrReadOnly, )
@@ -48,21 +50,7 @@ class CategoriesViewSet(CreateModelMixin, ListModelMixin,
     lookup_field = 'slug'
 
 
-class TitleFilter(django_filters.FilterSet):
-    name = django_filters.CharFilter(
-        field_name='name', lookup_expr='icontains')
-    category = django_filters.CharFilter(field_name='category__slug')
-    genre = django_filters.CharFilter(field_name='genre__slug')
-    year = django_filters.NumberFilter(field_name='year')
-
-    class Meta:
-        model = Title
-        fields = ['name', 'genre', 'category', 'year', ]
-
-
-class TitlesViewSet(CreateModelMixin, ListModelMixin,
-                    RetrieveModelMixin, UpdateModelMixin,
-                    DestroyModelMixin, viewsets.GenericViewSet):
+class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     permission_classes = (AdminOrReadOnly, )
     filter_backends = [DjangoFilterBackend]
