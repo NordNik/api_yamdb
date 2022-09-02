@@ -25,7 +25,7 @@ from .throttles import NoGuessRateThrottle
 from .utils import (
     get_tokens_for_user, send_confirmation_mail, get_confirmation_code
 )
-from filters import TitleFilter
+from .filters import TitleFilter
 
 
 class CreateDeleteViewSet(CreateModelMixin, ListModelMixin,
@@ -69,7 +69,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorOrReadOnly,)
 
     def get_queryset(self):
-        return get_object_or_404(Title, pk=self.kwargs.get('title_id')).reviews.all()
+        return get_object_or_404(
+            Title, pk=self.kwargs.get('title_id')
+        ).reviews.all()
 
     def perform_create(self, serializer):
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
@@ -85,7 +87,9 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorOrReadOnly,)
 
     def get_queryset(self):
-        return get_object_or_404(Review, pk=self.kwargs.get('review_id')).comments.all()
+        return get_object_or_404(
+            Review, pk=self.kwargs.get('review_id')
+        ).comments.all()
 
     def perform_create(self, serializer):
         review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
