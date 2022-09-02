@@ -1,3 +1,4 @@
+import django_filters
 from rest_framework import viewsets, status, permissions, filters
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -6,17 +7,13 @@ from rest_framework.decorators import (
 from rest_framework.mixins import (
     CreateModelMixin, ListModelMixin,
     UpdateModelMixin, DestroyModelMixin, RetrieveModelMixin)
-from rest_framework import filters
-from .utils import get_tokens_for_user
-import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.utils import IntegrityError
 from rest_framework.exceptions import ValidationError
+from django.contrib.auth.tokens import default_token_generator
 
 from .permissions import (
-    SignupPermission, AdminPermission,
-    IsSuperUserPermission, AdminOrReadOnly,
-    IsAuthorOrReadOnly
+    IsSuperUserOrAdminPermission, AdminOrReadOnly, IsAuthorOrReadOnly
 )
 
 from reviews.models import (
@@ -24,8 +21,11 @@ from reviews.models import (
 from .serializers import (
     AuthSerializer, TokenSerializer, UserSerializer,
     GenresSerializer, CategoriesSerializer, TitleReadSerializer,
-    TitlesPOSTSerializer, CommentSerializer, MeSerializer, ReviewSerializer)
+    TitlesPOSTSerializer, CommentSerializer, ReviewSerializer, MeSerializer)
 from .throttles import NoGuessRateThrottle
+from .utils import (
+    get_tokens_for_user, send_confirmation_mail, get_confirmation_code
+)
 
 
 class GenresViewSet(CreateModelMixin, ListModelMixin,
@@ -108,17 +108,17 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['POST'])
-@permission_classes([SignupPermission | IsSuperUserPermission])
 def signup(request):
     """
     Sends confirmation mail to mentioned email, and save data about user.
     """
     serializer = AuthSerializer(data=request.data)
-    if not serializer.is_valid():
-        return Response(
-            data=serializer.errors, status=status.HTTP_400_BAD_REQUEST
-        )
-    serializer.save()
+    serializer.is_valid(raise_exception=True)
+    email = serializer.validated_data['email']
+    username = serializer.validated_data['username']
+    new_user = User.objects.create_user(email=email, username=username)
+    confirmation_code = get_confirmation_code(user=new_user)
+    send_confirmation_mail(email=email, code=confirmation_code)
     return Response(data=request.data, status=status.HTTP_200_OK)
 
 
@@ -128,15 +128,17 @@ def signup(request):
 def token(request):
     """Get and send a token to user which has been validated."""
     serializer = TokenSerializer(data=request.data)
-    if not serializer.is_valid():
-        return Response(
-            data=serializer.errors, status=status.HTTP_400_BAD_REQUEST
-        )
+    serializer.is_valid(raise_exception=True)
+    confirmation_code = serializer.validated_data['confirmation_code']
     user = get_object_or_404(
         User,
         username=serializer.validated_data['username'],
-        confirmation_code=serializer.validated_data['confirmation_code']
     )
+    if not default_token_generator.check_token(user, confirmation_code):
+        return Response(
+            'Confirmation code is not valid',
+            status=status.HTTP_400_BAD_REQUEST
+        )
     token = get_tokens_for_user(user=user)
     return Response(data=token, status=status.HTTP_200_OK)
 
@@ -146,7 +148,7 @@ class UserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (AdminPermission | IsSuperUserPermission,)
+    permission_classes = (IsSuperUserOrAdminPermission,)
     http_method_names = ('get', 'post', 'patch', 'delete')
     search_fields = ('username',)
 
@@ -155,19 +157,17 @@ class UserViewSet(viewsets.ModelViewSet):
         methods=['get', 'patch'],
         permission_classes=[permissions.IsAuthenticated]
     )
-    def me(self, request):
+    def me(self, request,):
         """
         Get or update (patch method) inf about requested user.
         """
+        print(request.data)
         me = get_object_or_404(User, username=request.user.username)
         if request.method == 'GET':
             serializer = MeSerializer(me)
             return Response(serializer.data, status=status.HTTP_200_OK)
         if request.method == 'PATCH':
             serializer = MeSerializer(me, data=request.data)
-            if not serializer.is_valid():
-                return Response(
-                    data=serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                )
+            serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

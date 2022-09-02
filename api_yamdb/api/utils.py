@@ -1,11 +1,8 @@
-from string import ascii_uppercase, digits
-from random import choices
-
 from django.core.mail import send_mail
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.tokens import default_token_generator
 
-
-CODE_LENGTH = 8
+from api_yamdb.settings import DOMAIN_NAME
 
 
 def send_confirmation_mail(email, code):
@@ -15,15 +12,15 @@ def send_confirmation_mail(email, code):
         'Application for registration on the yam_db service '
         'has been received from your email address. If it is not you, '
         f'ignore the message. There is your conformation code: {code}',
-        'confirmation@yamdb.com',
+        DOMAIN_NAME,
         [email],
         fail_silently=False,
     )
 
 
-def get_confirmation_code():
+def get_confirmation_code(user):
     """Generate confirmation code."""
-    return ''.join(choices(ascii_uppercase + digits, k=CODE_LENGTH))
+    return default_token_generator.make_token(user)
 
 
 def get_tokens_for_user(user):

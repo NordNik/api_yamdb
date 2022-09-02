@@ -19,7 +19,6 @@ class User(AbstractUser):
     )
     password = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField(unique=True)
-    confirmation_code = models.CharField(max_length=8,)
 
     @property
     def is_moderator(self):
