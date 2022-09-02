@@ -40,8 +40,7 @@ class TitlesPOSTSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = (
-            'id', 'name', 'year', 'genre', 'category', 'description', 'rating'
-        )
+            'id', 'name', 'year', 'genre', 'category', 'description', 'rating')
         model = Title
 
 
@@ -58,6 +57,17 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'text', 'author', 'score', 'pub_date')
         model = Review
+
+    def validate(self, value):
+        title = self.context['request'].parser_context['kwargs']['title_id']
+        if (Review.objects.filter(
+                author=self.context['request'].user,
+                title=title).exists()
+                and self.context['request'].method != 'PATCH'):
+            raise serializers.ValidationError(
+                'You cannot review one title twice')
+        else:
+            return value
 
 
 class AuthSerializer(serializers.ModelSerializer):
@@ -95,8 +105,7 @@ class CommentSerializer(serializers.ModelSerializer):
         slug_field='username',
         read_only=True
     )
-    review = serializers.CharField(read_only=True)
 
     class Meta:
-        fields = ('id', 'author', 'text', 'pub_date', 'review')
+        fields = ('id', 'text', 'author', 'pub_date')
         model = Comment

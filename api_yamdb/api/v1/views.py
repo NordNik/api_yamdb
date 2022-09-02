@@ -1,22 +1,15 @@
 from rest_framework import viewsets, status, permissions, filters
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import (
     api_view, permission_classes, action, throttle_classes)
 from rest_framework.mixins import (
     CreateModelMixin, ListModelMixin, DestroyModelMixin)
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.utils import IntegrityError
-from reviews.models import (User, Genre, Categorie, Title, Review)
-from rest_framework.exceptions import ValidationError
 from django.contrib.auth.tokens import default_token_generator
 
 from .permissions import (
-    IsSuperUserOrAdminPermission, AdminOrReadOnly, IsAuthorOrReadOnly
-)
-from django.db.utils import IntegrityError
-from rest_framework.exceptions import ValidationError
+    IsSuperUserOrAdminPermission, AdminOrReadOnly, IsAuthorOrReadOnly)
 from reviews.models import (
     User, Genre, Categorie, Title, Review)
 from .serializers import (
@@ -25,8 +18,7 @@ from .serializers import (
     TitlesPOSTSerializer, CommentSerializer, ReviewSerializer, MeSerializer)
 from .throttles import NoGuessRateThrottle
 from .utils import (
-    get_tokens_for_user, send_confirmation_mail, get_confirmation_code
-)
+    get_tokens_for_user, send_confirmation_mail, get_confirmation_code)
 from .filters import TitleFilter
 
 
@@ -77,10 +69,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
-        try:
-            serializer.save(author=self.request.user, title=title)
-        except IntegrityError:
-            raise ValidationError('You cannot review the same title twice')
+        serializer.save(author=self.request.user, title=title)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -94,7 +83,10 @@ class CommentViewSet(viewsets.ModelViewSet):
         ).comments.all()
 
     def perform_create(self, serializer):
-        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        review = get_object_or_404(
+            Review,
+            pk=self.kwargs.get('review_id'),
+            title=self.kwargs.get('title_id'))
         serializer.save(author=self.request.user, review_id=review.id)
 
 
