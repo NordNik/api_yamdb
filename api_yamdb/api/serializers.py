@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
-from rest_framework.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 from reviews.models import (User, Categorie, Genre, Title, Comment, Review)
@@ -9,15 +8,6 @@ from .utils import get_confirmation_code, send_confirmation_mail
 
 class GenresSerializer(serializers.ModelSerializer):
 
-    def validate(self, data):
-        if not self.context['request'].user.is_authenticated:
-            raise ValidationError(
-                "You do not have permission for this action")
-        if self.context['request'].user.role != 'admin':
-            raise ValidationError(
-                "You do not have permission for this action")
-        return data
-
     class Meta:
         exclude = ('id', )
         model = Genre
@@ -25,15 +15,6 @@ class GenresSerializer(serializers.ModelSerializer):
 
 
 class CategoriesSerializer(serializers.ModelSerializer):
-
-    def validate(self, data):
-        if not self.context['request'].user.is_authenticated:
-            raise ValidationError(
-                "You do not have permission for this action")
-        if self.context['request'].user.role != 'admin':
-            raise ValidationError(
-                "You do not have permission for this action")
-        return data
 
     class Meta:
         exclude = ('id', )
@@ -68,8 +49,7 @@ class TitlesPOSTSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
-        read_only=True, slug_field='username'
-    )
+        read_only=True, slug_field='username',)
     score = serializers.IntegerField(
         validators=(
             MinValueValidator(1),

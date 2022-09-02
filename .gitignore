@@ -150,3 +150,5 @@ media/
 csv2sql.py
 db.sqlite
 trash.py
+reviews/migrations/
+api/migrations/

@@ -1,30 +1,26 @@
 from rest_framework import viewsets, status, permissions, filters
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import (
     api_view, permission_classes, action, throttle_classes)
 from rest_framework.mixins import (
     CreateModelMixin, ListModelMixin, DestroyModelMixin)
-from rest_framework import filters
-from .utils import get_tokens_for_user
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.utils import IntegrityError
-from rest_framework.exceptions import ValidationError
 
 from .permissions import (
     SignupPermission, AdminPermission,
     IsSuperUserPermission, AdminOrReadOnly,
-    IsAuthorOrReadOnly
-)
-
-from reviews.models import (
-    User, Genre, Categorie, Title, Review)
+    IsAuthorOrReadOnly)
+from reviews.models import (User, Genre, Categorie, Title, Review)
 from .serializers import (
     AuthSerializer, TokenSerializer, UserSerializer,
     GenresSerializer, CategoriesSerializer, TitleReadSerializer,
     TitlesPOSTSerializer, CommentSerializer, MeSerializer, ReviewSerializer)
 from .throttles import NoGuessRateThrottle
-from filters import TitleFilter
+from .filters import TitleFilter
+from .utils import get_tokens_for_user
 
 
 class CreateDeleteViewSet(CreateModelMixin, ListModelMixin,

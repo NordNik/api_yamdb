@@ -16,7 +16,15 @@ git clone git@github.com/USERNAME/{{ project_name }}.git
 cd {{ project_name }}
 ```
 
-Secondly, create a new environment using
+You can run all futher necessary command automatically by
+
+```BASH
+make setup
+```
+
+In this case you need [make](https://makefiletutorial.com/#top) to be installed.
+
+Or you can settle up everything by hand. To do this create a new environment using
 
 ```PYTHON
 python3 -m venv venv

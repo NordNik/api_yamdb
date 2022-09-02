@@ -4,6 +4,7 @@ from django.contrib import admin
 from .models import User, Categorie, Genre, Title, Comment, Review
 
 
+@admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     list_display = ('username', 'role', 'email')
     list_editable = ('role', 'email')
@@ -13,17 +14,13 @@ class UserAdmin(admin.ModelAdmin):
         'last_login', 'date_joined', 'password', 'confirmation_code')
 
 
-admin.site.register(User, UserAdmin)
-
-
+@admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'category', 'rating')
     search_fields = ('name',)
     list_filter = ('category',)
 
 
-admin.site.register(Title, TitleAdmin)
-admin.site.register(Categorie)
-admin.site.register(Genre)
-admin.site.register(Review)
-admin.site.register(Comment)
+@admin.register(Genre, Categorie, Review, Comment)
+class TitlePropertiesAdmin(admin.ModelAdmin):
+    pass
