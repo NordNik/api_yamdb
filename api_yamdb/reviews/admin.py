@@ -10,8 +10,7 @@ class UserAdmin(admin.ModelAdmin):
     list_editable = ('role', 'email')
     exclude = ('groups', 'user_permissions', 'is_staff')
     search_fields = ('username', 'email')
-    readonly_fields = (
-        'last_login', 'date_joined', 'password', 'confirmation_code')
+    readonly_fields = ('last_login', 'date_joined', 'password',)
 
 
 @admin.register(Title)
