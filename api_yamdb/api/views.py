@@ -1,12 +1,10 @@
-import django_filters
 from rest_framework import viewsets, status, permissions, filters
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import (
     api_view, permission_classes, action, throttle_classes)
 from rest_framework.mixins import (
-    CreateModelMixin, ListModelMixin,
-    UpdateModelMixin, DestroyModelMixin, RetrieveModelMixin)
+    CreateModelMixin, ListModelMixin, DestroyModelMixin)
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.utils import IntegrityError
 from rest_framework.exceptions import ValidationError
@@ -15,7 +13,8 @@ from django.contrib.auth.tokens import default_token_generator
 from .permissions import (
     IsSuperUserOrAdminPermission, AdminOrReadOnly, IsAuthorOrReadOnly
 )
-
+from django.db.utils import IntegrityError
+from rest_framework.exceptions import ValidationError
 from reviews.models import (
     User, Genre, Categorie, Title, Review)
 from .serializers import (
@@ -26,10 +25,15 @@ from .throttles import NoGuessRateThrottle
 from .utils import (
     get_tokens_for_user, send_confirmation_mail, get_confirmation_code
 )
+from filters import TitleFilter
 
 
-class GenresViewSet(CreateModelMixin, ListModelMixin,
-                    DestroyModelMixin, viewsets.GenericViewSet):
+class CreateDeleteViewSet(CreateModelMixin, ListModelMixin,
+                          DestroyModelMixin, viewsets.GenericViewSet):
+    pass
+
+
+class GenresViewSet(CreateDeleteViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenresSerializer
     permission_classes = (AdminOrReadOnly, )
@@ -38,8 +42,7 @@ class GenresViewSet(CreateModelMixin, ListModelMixin,
     lookup_field = 'slug'
 
 
-class CategoriesViewSet(CreateModelMixin, ListModelMixin,
-                        DestroyModelMixin, viewsets.GenericViewSet):
+class CategoriesViewSet(CreateDeleteViewSet):
     queryset = Categorie.objects.all()
     serializer_class = CategoriesSerializer
     permission_classes = (AdminOrReadOnly, )
@@ -48,21 +51,7 @@ class CategoriesViewSet(CreateModelMixin, ListModelMixin,
     lookup_field = 'slug'
 
 
-class TitleFilter(django_filters.FilterSet):
-    name = django_filters.CharFilter(
-        field_name='name', lookup_expr='icontains')
-    category = django_filters.CharFilter(field_name='category__slug')
-    genre = django_filters.CharFilter(field_name='genre__slug')
-    year = django_filters.NumberFilter(field_name='year')
-
-    class Meta:
-        model = Title
-        fields = ['name', 'genre', 'category', 'year', ]
-
-
-class TitlesViewSet(CreateModelMixin, ListModelMixin,
-                    RetrieveModelMixin, UpdateModelMixin,
-                    DestroyModelMixin, viewsets.GenericViewSet):
+class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     permission_classes = (AdminOrReadOnly, )
     filter_backends = [DjangoFilterBackend]
@@ -80,9 +69,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorOrReadOnly,)
 
     def get_queryset(self):
-        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
-        new_queryset = title.reviews.all()
-        return new_queryset
+        return get_object_or_404(Title, pk=self.kwargs.get('title_id')).reviews.all()
 
     def perform_create(self, serializer):
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
@@ -98,9 +85,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorOrReadOnly,)
 
     def get_queryset(self):
-        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
-        new_queryset = review.comments.all()
-        return new_queryset
+        return get_object_or_404(Review, pk=self.kwargs.get('review_id')).comments.all()
 
     def perform_create(self, serializer):
         review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
