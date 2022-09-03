@@ -94,13 +94,17 @@ class CommentViewSet(viewsets.ModelViewSet):
 def signup(request):
     """
     Sends confirmation mail to mentioned email, and save data about user.
+
+    In case if user already exists, it send new email with confirmation code.
     """
     serializer = AuthSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     email = serializer.validated_data['email']
     username = serializer.validated_data['username']
-    new_user = User.objects.create_user(email=email, username=username)
-    confirmation_code = get_confirmation_code(user=new_user)
+    user = User.objects.filter(username=username, email=email)
+    if not user.exists():
+        user = User.objects.create_user(email=email, username=username)
+    confirmation_code = get_confirmation_code(user=user)
     send_confirmation_mail(email=email, code=confirmation_code)
     return Response(data=request.data, status=status.HTTP_200_OK)
 
@@ -144,13 +148,11 @@ class UserViewSet(viewsets.ModelViewSet):
         """
         Get or update (patch method) inf about requested user.
         """
-        print(request.data)
         me = get_object_or_404(User, username=request.user.username)
         if request.method == 'GET':
             serializer = MeSerializer(me)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        if request.method == 'PATCH':
-            serializer = MeSerializer(me, data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = MeSerializer(me, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)

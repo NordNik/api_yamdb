@@ -2,7 +2,7 @@ from django.core.mail import send_mail
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.tokens import default_token_generator
 
-from api_yamdb.settings import DOMAIN_NAME
+from api_yamdb.settings import DEFAULT_FROM_EMAIL
 
 
 def send_confirmation_mail(email, code):
@@ -12,7 +12,7 @@ def send_confirmation_mail(email, code):
         'Application for registration on the yam_db service '
         'has been received from your email address. If it is not you, '
         f'ignore the message. There is your conformation code: {code}',
-        DOMAIN_NAME,
+        DEFAULT_FROM_EMAIL,
         [email],
         fail_silently=False,
     )
