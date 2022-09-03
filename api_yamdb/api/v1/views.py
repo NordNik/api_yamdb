@@ -7,6 +7,7 @@ from rest_framework.mixins import (
     CreateModelMixin, ListModelMixin, DestroyModelMixin)
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth.tokens import default_token_generator
+from django.db.models import Avg
 
 from .permissions import (
     IsSuperUserOrAdminPermission, AdminOrReadOnly, IsAuthorOrReadOnly)
@@ -55,6 +56,9 @@ class TitlesViewSet(viewsets.ModelViewSet):
         if self.request.method in ('POST', 'PATCH',):
             return TitlesPOSTSerializer
         return TitleReadSerializer
+
+    def get_queryset(self):
+        return Title.objects.all().annotate(rating=Avg('reviews__score'))
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

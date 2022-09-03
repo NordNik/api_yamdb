@@ -13,13 +13,6 @@ class UserAdmin(admin.ModelAdmin):
     readonly_fields = ('last_login', 'date_joined', 'password',)
 
 
-@admin.register(Title)
-class TitleAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'category', 'rating')
-    search_fields = ('name',)
-    list_filter = ('category',)
-
-
-@admin.register(Genre, Categorie, Review, Comment)
+@admin.register(Title, Genre, Categorie, Review, Comment)
 class TitlePropertiesAdmin(admin.ModelAdmin):
     pass

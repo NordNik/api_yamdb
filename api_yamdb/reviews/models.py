@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.db.models import Avg
 
 
 class User(AbstractUser):
@@ -58,11 +57,6 @@ class Title(models.Model):
     )
     year = models.PositiveSmallIntegerField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-
-    @property
-    def rating(self):
-        return self.reviews.all().aggregate(Avg('score')).get(
-            'score__avg', 0.00)
 
     def __str__(self):
         return self.name
